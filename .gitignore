@@ -1,0 +1,6 @@
+*.class
+gradle/
+build/
+.idea/
+.gradle/
+src/test/
