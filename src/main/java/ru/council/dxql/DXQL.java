@@ -29,6 +29,7 @@ import java.util.*;
 @Getter
 @Setter
 @ToString
+@SuppressWarnings("unused")
 public class DXQL extends QueryExecutor {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -123,7 +124,7 @@ public class DXQL extends QueryExecutor {
         if (queryDefinitions == null) return null;
 
         for (QueryDefinition qd : queryDefinitions) {
-            if (qd.getVariableParameters() != null && qd.getVariableParameters().size() != 0) {
+            if (qd.getVariableParameters() != null && !qd.getVariableParameters().isEmpty()) {
                 throw new ProcessingException("Attempt to call query pipeline that uses variable parameters without parameters");
             }
         }
@@ -227,7 +228,7 @@ public class DXQL extends QueryExecutor {
 
         List<QueryDefinition> queryDefinitions = configuration.getQueryDefinitions();
 
-        if (queryDefinitions == null || queryDefinitions.size() == 0) {
+        if (queryDefinitions == null || queryDefinitions.isEmpty()) {
             log.warn("Empty configuration!");
             return null;
         }
@@ -275,33 +276,31 @@ public class DXQL extends QueryExecutor {
     private Map<QueryDefinition, List<QueryDefinition>> getQueryRelationsMap(List<QueryDefinition> queryDefinitions, TargetFormat format) {
         Map<QueryDefinition, List<QueryDefinition>> queryRelationsMap = new HashMap<>();
 
-        switch (format) {
-            case Json:
-                for (QueryDefinition currentObservableQuery : queryDefinitions) {
-                    for (MergerConfiguration merge : currentObservableQuery.getMergers()) {
-                        String into = merge.getWith();
+        if (Objects.requireNonNull(format) == TargetFormat.Json) {
+            for (QueryDefinition currentObservableQuery : queryDefinitions) {
+                for (MergerConfiguration merge : currentObservableQuery.getMergers()) {
+                    String into = merge.getWith();
 
-                        QueryDefinition parentQuery = configuration.getQueryByName(into);
+                    QueryDefinition parentQuery = configuration.getQueryByName(into);
 
-                        if (parentQuery != null) {
-                            if (queryRelationsMap.containsKey(parentQuery)) {
-                                if (queryRelationsMap.get(parentQuery).contains(currentObservableQuery)) {
-                                    throw new IllegalStateException("Parent depends on child => cyclic dependency! [ parent: " + into + ", child: " + currentObservableQuery.getQueryIdentifier() + "]");
-                                }
+                    if (parentQuery != null) {
+                        if (queryRelationsMap.containsKey(parentQuery)) {
+                            if (queryRelationsMap.get(parentQuery).contains(currentObservableQuery)) {
+                                throw new IllegalStateException("Parent depends on child => cyclic dependency! [ parent: " + into + ", child: " + currentObservableQuery.getQueryIdentifier() + "]");
                             }
-                            if (!queryRelationsMap.containsKey(currentObservableQuery)) {
-                                queryRelationsMap.put(currentObservableQuery, new ArrayList<>());
-                            }
-                            log.debug("Current query {} -> parent {}", currentObservableQuery.getQueryIdentifier(), parentQuery.getQueryIdentifier());
-                            queryRelationsMap.get(currentObservableQuery).add(parentQuery);
-                        } else {
-                            throw new NoSuchElementException("Not found parent with name " + into);
                         }
+                        if (!queryRelationsMap.containsKey(currentObservableQuery)) {
+                            queryRelationsMap.put(currentObservableQuery, new ArrayList<>());
+                        }
+                        log.debug("Current query {} -> parent {}", currentObservableQuery.getQueryIdentifier(), parentQuery.getQueryIdentifier());
+                        queryRelationsMap.get(currentObservableQuery).add(parentQuery);
+                    } else {
+                        throw new NoSuchElementException("Not found parent with name " + into);
                     }
                 }
-                break;
-            default:
-                throw new FormatNotSupportedException("This format not supported yet");
+            }
+        } else {
+            throw new FormatNotSupportedException("This format not supported yet");
         }
 
         return queryRelationsMap;

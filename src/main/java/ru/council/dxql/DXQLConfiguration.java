@@ -21,10 +21,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.SchemaFactory;
 import java.io.*;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.function.Function;
 
 @XmlRootElement(name = "dxql")
@@ -42,7 +39,7 @@ public class DXQLConfiguration implements ValidatedModel {
     private String schema = "public";
 
     @XmlElement(name = "used-locale")
-    private String usedLocale = "en_US";
+    private String usedLocale = Locale.US.toString();
 
     @XmlElementWrapper(name = "temporary-tables")
     @XmlElement(name = "temporary-table")
