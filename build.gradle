@@ -1,6 +1,8 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
+    id 'org.jetbrains.kotlin.jvm' version '1.9.22'
+    id 'org.jetbrains.dokka' version '1.9.10'
 }
 
 group 'ru.council.libs'
@@ -64,6 +66,25 @@ publishing {
             }
         }
     }
+}
+
+tasks.dokkaGfm.configure {
+    doFirst {
+        delete file("$rootDir/docs/dokka/gfm").listFiles()
+    }
+    outputDirectory.set(file("$rootDir/docs/dokka/gfm"))
+}
+
+tasks.dokkaHtml.configure {
+    doFirst {
+        delete file("$rootDir/docs/dokka/html").listFiles()
+    }
+    outputDirectory.set(file("$rootDir/docs/dokka/html"))
+}
+
+
+tasks.register("buildDocs") {
+    dependsOn(dokkaGfm, dokkaHtml)
 }
 
 test {

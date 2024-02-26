@@ -25,6 +25,13 @@ import java.awt.*;
 import java.util.List;
 import java.util.*;
 
+/**
+ * <p>
+ *     Класс DXQL. Реализует основную логику DXQL.
+ * </p>
+ *
+ * @author a.pesterev
+ */
 @Slf4j
 @Getter
 @Setter
@@ -34,6 +41,14 @@ public class DXQL extends QueryExecutor {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
+    /**
+     * <p>
+     *     Конструктор DXQL. Инициализирует объект DXQL и используется для генерации данных по конфигурации, а также осуществляет проверки поступающих данных
+     * </p>
+     *
+     * @param template template used to execute sql queries
+     * @param configuration configuration of sql queries
+     */
     public DXQL(@NonNull JdbcTemplate template, @NonNull DXQLConfiguration configuration) {
         super(template, configuration);
         objectMapper.registerModule(new JavaTimeModule());
@@ -118,6 +133,10 @@ public class DXQL extends QueryExecutor {
         }
     }
 
+    /**
+     * @param format формат результата
+     * @return json, описанный в конфигурации
+     */
     @Transactional
     public MetaJson executeWholeDocument(TargetFormat format) {
         List<QueryDefinition> queryDefinitions = preface();
@@ -152,11 +171,30 @@ public class DXQL extends QueryExecutor {
         );
     }
 
+    /**
+     * <p>
+     *     Выполняет все запросы из конфигурации и возвращает json с результатами отдельного запроса
+     * </p>
+     * @param queryName название интересующего запроса из конфигурации
+     * @param format формат результата
+     * @return json, описанный в конфигурации
+     */
     @Transactional
     public MetaJson executeWholeDocumentForQuery(String queryName, TargetFormat format) {
         return executeWholeDocument(format).resolve(queryName);
     }
 
+    /**
+     * <p>
+     *     Выполняет все запросы из конфигурации и возвращает json.
+     * </p>
+     * @param givenParameters параметры для выполнения конфигурации
+     * @param format формат результата
+     * @param overrideMessage ассоциативный словарь с переопределениями текстовых сообщений об ошибках
+     * @return результат выполнения в формате json
+     * @throws ConstraintApplyException ошибка границ входных параметров
+     * @throws JsonProcessingException ошибка обработки json
+     */
     @Transactional
     public MetaJson executeWholeDocument(Map<String, Object> givenParameters, TargetFormat format, Map<String, String> overrideMessage) throws ConstraintApplyException, JsonProcessingException {
         List<QueryDefinition> queryDefinitions = preface();
