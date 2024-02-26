@@ -64,7 +64,7 @@ public class DXQL extends QueryExecutor {
                         if (vb.getType().equals(Type.Null)) {
                             target.put(vb.getName(), null);
                         } else {
-                            throw new ValidationException("No default value can be used to resolve non-required parameter!");
+                            throw new ValidationException("No default value that can be used to resolve non-required parameter!");
                         }
                     } else {
                         try {
